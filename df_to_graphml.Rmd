@@ -21,7 +21,7 @@ to_node <- c("B", "C", "F", "A", "C")
 sample <- data.frame(Name, Age)
 
 ```{r}
-load(file.path(cache_dir,"dat_tweets_short_t_mentions.RDA"))
+load("dat_tweets_short_t_mentions.RDA")
 
 ##delete rows with could cause ERROR
 sample <- sample[!grepl("NULL", sample$mentions_user_id),]
