@@ -1,0 +1,88 @@
+---
+title: "df_to_graphml"
+author: "Quentin Bukold"
+date: "2023-01-21"
+output: html_document
+---
+
+# libraries
+```{r}
+library(tidyr)
+library(dplyr)
+library(igraph)
+#library(ggplot2)
+#library(stringr)
+```
+
+# get narrow df 
+structure:
+node <- c("A", "A", "A", "B", "B")
+to_node <- c("B", "C", "F", "A", "C")
+sample <- data.frame(Name, Age)
+
+```{r}
+load("dat_tweets_short_t_mentions.RDA")
+
+##delete rows with could cause ERROR
+sample <- sample[!grepl("NULL", sample$mentions_user_id),]
+sample <- sample %>% drop_na(mentions_user_id)
+colnames(sample)
+```
+
+# get df for extra infos
+node <- c("A", "B", "C", "D", "E")
+party <- c("SPD", "CDU", "CDU", "FDP", "CSU")
+```{r}
+load(file.path(cache_dir,"total_list_nds.RDA"))
+```
+
+#create graph from df
+```{r}
+#get edge-list and convert to matrix
+edges <- sample[, c("user_id","mentions_user_id")]
+
+##Adjazenzmatrix (set to directed)
+g <- get.adjacency(graph.edgelist(as.matrix(edges), directed=TRUE))
+
+#create graph
+g_dir <- graph.adjacency(g, mode = "directed", weighted=T)
+## remove loops
+g_dir <- simplify(g_dir)
+
+```
+
+# set labels and degrees of vertices, attributes of vertices and edges
+```{r}
+ix <- match(V(g_dir)$name, (total_list$user_id)) #(g_dir name = user_id)
+V(g_dir)$label <- as.character(total_list$twitter_handle[ix])
+V(g_dir)$party <- total_list$party[ix]
+V(g_dir)$degree <- degree(g_dir)
+
+degree_statistic<-data.frame(V(g_dir)$label, V(g_dir)$degree)
+save(degree_statistic, file= file.path(cache_dir, 'degree_statistics.RDA'))
+```
+
+# create second contracted graph (not a must)
+## contract a graph to a specific attribute (in this example party of politicians)
+```{r}
+#party_id
+ids <- data.frame(Partei = c("AfD","CDU", "CSU", "DIE LINKE","FDP", "Bündnis 90/Die Grünen","SPD"), ID = c(1:7))
+ix <- match(V(g_dir)$party, (ids$Partei))
+V(g_dir)$party_id <- ids$ID[ix]
+g_dir <- delete.vertices(g_dir, V(g_dir)[is.na(party_id)])
+V(g_dir)$party_id
+
+degree_statistic_2<-data.frame(V(g_dir)$label, V(g_dir)$party) 
+#contract
+g2<-contract(g_dir, mapping=V(g_dir)$party_id, vertex.attr.comb=first)
+# remove loops
+g2 <- igraph::simplify(g2)
+V(g2)$label<-V(g2)$party
+```
+
+#get graphml file ###############
+```{r}
+write.graph(g_dir, file= file.path(cache_dir, 'seed_accounts_mentions_new.graphml'), format = 'graphml')
+write.graph(g2, file= file.path(cache_dir, 'seed_partys_mentions_new.graphml'), format = 'graphml')
+```
+Further processing e.g. with Gephi
