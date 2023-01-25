@@ -5,8 +5,8 @@ SNS und Web-Analysen
 ANWENDUNGSGEBIET_description
 
 bspw.
-*YT_
-*TW_
-*GRAPH_
-*NLP_
-*WEB_
+- YT_
+- TW_
+- GRAPH_
+- NLP_
+- WEB_
