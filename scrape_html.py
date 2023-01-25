@@ -4,7 +4,7 @@
 # here since most errors will be based on connection issues. Should be specified in the future though. An estimate can be implemented, since it will take around 4 seconds per url to make sure that there are not to many requests
 # to the websites in a short amount of time.
 #
-# Important: This script looks for an url in the 6th column of an excel file with headers.
+# Important: This script looks for an url in the 6th column of an excel file with headers. There is currently no variable that changes this, so it need to be changed in the code itself.
 
 import requests
 from bs4 import BeautifulSoup
