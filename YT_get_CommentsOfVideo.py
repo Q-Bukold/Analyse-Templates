@@ -45,35 +45,41 @@ def get_comment(api, video, page_token):
         '''
 
     next_page_token = page["nextPageToken"]
-    print(page_list)
-
     return page_list, next_page_token
+
+def post_processing_and_saving(list, filename):
+    #convert to df
+    data_df = pd.DataFrame(list, columns=['author', 'comment'])
+
+    #delete newlines in comments
+    data_df['comment'] = data_df['comment'].replace(r'\s+|\\n', ' ', regex=True) 
+    #strip excess white spaces
+    data_df['comment'] = data_df['comment'].str.strip()
+
+    print(data_df.shape)
+    lenght_df = data_df.shape[0]
+    data_df.to_csv(filename, sep="\t")
+    
+    return lenght_df
+
 
 
 
 data = []
 next_page_token = ''
 is_first_page = True
-i = 1
-i_max = 5 # N of comments = i_max * maxResults
+lenght_df = 0
 
-while is_first_page or next_page_token and i <= i_max:
-    i += 1
+max_lenght_df = 20
+
+while is_first_page or next_page_token and lenght_df <= max_lenght_df:
     is_first_page = False
     page_data, next_page_token = get_comment(youtube_api, video_id, next_page_token)
     data += page_data
 
-
-
-data_df = pd.DataFrame(data, columns=['author', 'comment'])
-
-#post processing
-data_df['comment'] = data_df['comment'].replace(r'\s+|\\n', ' ', regex=True) 
-data_df['comment'] = data_df['comment'].str.strip()
+    lenght_df = post_processing_and_saving(data, '/Users/qbukold/Desktop/Schnulzen/gonewiththewind_comments2.tsv')
 
 
 
-print(data_df)
-print(data_df.shape)
-
-data_df.to_csv('/Users/qbukold/Desktop/Schnulzen/gonewiththewind_comments2.tsv', sep="\t")
+lenght_df = post_processing_and_saving(data, '/Users/qbukold/Desktop/Schnulzen/gonewiththewind_comments2.tsv')
+print(lenght_df)
