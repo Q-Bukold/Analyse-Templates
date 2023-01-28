@@ -2,14 +2,7 @@ import os
 import googleapiclient
 from googleapiclient.discovery import build
 import pandas as pd
-
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-api_service_name = "youtube"
-api_version = "v3"
-DEVELOPER_KEY = "AIzaSyAYvRpVKJUS5MUnw6NVcIQB484ao6CdutE"
-video_id = "XFkzRNyygfk" #creep
-youtube_api = googleapiclient.discovery.build(
-    api_service_name, api_version, developerKey=DEVELOPER_KEY)
+import time
 
 def get_comment(api, video, page_token):
     #create list of lists
@@ -18,7 +11,7 @@ def get_comment(api, video, page_token):
     #get page
     page = api.commentThreads().list(
         part="snippet",
-        maxResults=5, #CHANGE
+        maxResults=100, #CHANGE
         videoId=video_id,
         textFormat="plainText",
         #is there a netxt page? If yes, get token:
@@ -56,30 +49,38 @@ def post_processing_and_saving(list, filename):
     #strip excess white spaces
     data_df['comment'] = data_df['comment'].str.strip()
 
-    print(data_df.shape)
+    #print(data_df.shape)
     lenght_df = data_df.shape[0]
     data_df.to_csv(filename, sep="\t")
     
     return lenght_df
 
-
-
-
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+api_service_name = "youtube"
+api_version = "v3"
+DEVELOPER_KEY = "AIzaSyAYvRpVKJUS5MUnw6NVcIQB484ao6CdutE"
+youtube_api = googleapiclient.discovery.build(
+    api_service_name, api_version, developerKey=DEVELOPER_KEY)
+video_id = "PgF-rcHcPqE" #gwtw
+set_filename = "/Users/qbukold/Desktop/Schnulzen/1000_gwtw.tsv"
 data = []
 next_page_token = ''
 is_first_page = True
 lenght_df = 0
+waiting_time = 30 #seconds
 
-max_lenght_df = 20
+
+max_lenght_df = 1000 #CHANGE
+
 
 while is_first_page or next_page_token and lenght_df <= max_lenght_df:
+
     is_first_page = False
     page_data, next_page_token = get_comment(youtube_api, video_id, next_page_token)
     data += page_data
+    lenght_df = post_processing_and_saving(data, set_filename)
+    print(lenght_df)
 
-    lenght_df = post_processing_and_saving(data, '/Users/qbukold/Desktop/Schnulzen/gonewiththewind_comments2.tsv')
 
-
-
-lenght_df = post_processing_and_saving(data, '/Users/qbukold/Desktop/Schnulzen/gonewiththewind_comments2.tsv')
-print(lenght_df)
+lenght_df = post_processing_and_saving(data, set_filename)
+print("final len:", lenght_df)
