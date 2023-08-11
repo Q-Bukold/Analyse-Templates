@@ -6,7 +6,7 @@ import pandas as pd
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 api_service_name = "youtube"
 api_version = "v3"
-DEVELOPER_KEY = "AIzaSyAYvRpVKJUS5MUnw6NVcIQB484ao6CdutE"
+DEVELOPER_KEY = ""
 video_id = "XFkzRNyygfk" #creep
 youtube_api = googleapiclient.discovery.build(
     api_service_name, api_version, developerKey=DEVELOPER_KEY)
